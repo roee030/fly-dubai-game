@@ -43,15 +43,14 @@
     /* Touch controls, styled like the arcade buttons: dark bevelled square, teal glow, pixel label. */
     .controls { display: none; }
     .touch .controls { display: block; }
+    :root { --bw: clamp(52px, 9vw, 70px); }
     .btn {
-      position: absolute; bottom: 4%; width: 9%; max-width: 70px; min-width: 52px; aspect-ratio: 1;
+      position: absolute; bottom: 4%; width: var(--bw); aspect-ratio: 1;
       display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
       background: none; border: 0; padding: 0; color: #cfe7e4; cursor: pointer;
       font: bold 11px 'Courier New', Courier, monospace; letter-spacing: 0.5px;
       -webkit-tap-highlight-color: transparent;
     }
-    .btn .label { position: absolute; top: -30px; text-align: center; white-space: nowrap; line-height: 1.1; }
-    .btn .label span { display: block; font-size: 10px; color: #8fb8b4; }
     .btn .face {
       width: 100%; height: 100%; box-sizing: border-box;
       background: linear-gradient(#2b4a55, #1b323b);
@@ -61,8 +60,19 @@
     }
     .btn.pressed .face { transform: translateY(3px); box-shadow: inset 0 -2px 0 #13242b, 0 0 8px rgba(90, 220, 220, 0.8); }
     .btn svg { width: 56%; height: 56%; fill: #bfe3dd; }
-    #btnNext { left: 4%; }
-    #btnAction { right: 4%; }
+    /* Both buttons sit on the right: RUN (arrow) next to ACTION (circle). */
+    #btnAction { right: 3vw; }
+    #btnNext { right: calc(3vw + var(--bw) + 16px); }
+
+    #restartBtn {
+      position: absolute; left: 50%; bottom: 4%; transform: translateX(-50%);
+      padding: 12px 30px; background: linear-gradient(#2b4a55, #1b323b);
+      border: 4px solid #a9c4c4; border-radius: 10px; color: #cfe7e4; cursor: pointer;
+      box-shadow: inset 0 -6px 0 #13242b, 0 0 14px rgba(90, 220, 220, 0.55);
+      font: bold 22px 'Courier New', Courier, monospace; letter-spacing: 1px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #restartBtn.hidden { display: none; }
     .btn.hidden { display: none; }
 
     /* Portrait phones: ask the player to rotate. */
@@ -98,15 +108,15 @@
       </div>
     </div>
 
+    <button id="restartBtn" class="hidden" aria-label="התחל מחדש">התחל מחדש</button>
+
     <div class="controls">
       <button class="btn" id="btnNext" aria-label="הבא">
-        <div class="label">NEXT<span>הבא</span></div>
         <div class="face">
           <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M2 8h9V4l7 6-7 6v-4H2z"/></svg>
         </div>
       </button>
       <button class="btn" id="btnAction" aria-label="פעולה">
-        <div class="label">ACTION / REPEAT<span>פעולה</span></div>
         <div class="face">
           <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7"/></svg>
         </div>

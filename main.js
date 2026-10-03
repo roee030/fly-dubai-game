@@ -172,11 +172,18 @@
 
   // Each stage shows the button it uses: NEXT while running in the cabin, ACTION elsewhere.
   function syncButtons() {
-    const playing = S.name !== "title";
+    const playing = S.name !== "title" && S.name !== "win";
     const running = S.name === "cabin";
-    btnNext.classList.toggle("hidden", !playing || !running);
+    btnNext.classList.toggle("hidden", !running);
     btnAction.classList.toggle("hidden", !playing || running);
+    restartBtn.classList.toggle("hidden", S.name !== "win");
   }
+
+  // "Start again" on the win screen.
+  const restartBtn = document.getElementById("restartBtn");
+  restartBtn.addEventListener("click", () => {
+    if (S.name === "win") go("takeoff");
+  });
 
   // Best effort: lock to landscape where the browser allows it (needs a user gesture).
   document.addEventListener("pointerdown", () => {
@@ -668,7 +675,6 @@
 
     text("כל הכבוד! הצלת את הטיסה! ✈️🏆", W / 2, H - 110, 34, "#ffcc33");
     text("בהשראת תושייתו וגבורתו של יניב אוחיון.", W / 2, H - 60, 22, "#ffffff");
-    text("[ENTER] לשחק שוב", W / 2, H - 22, 16, "#aaaaaa");
   }
 
   function render() {
