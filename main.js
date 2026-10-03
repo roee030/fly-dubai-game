@@ -106,7 +106,8 @@
     kickFrames: [1, 2, 3, 4, 5], // hero frames used for the kick
     kickEnds: [0.08, 0.16, 0.26, 0.36, 0.5],
   };
-  const DOOR_HITS = 5; // kicks until the door is destroyed (sprite 5)
+  const DOOR_HITS = 5; // kicks until the door is destroyed
+  const DOOR_PANEL_BY_HIT = [1, 2, 3, 3, 5, 5]; // door sprite shown after 0..5 kicks
 
   // Pilot fight: the cockpit is the background, and the hero and pilot are separate sprites that
   // move on their own. Each sprite is drawn bottom-center on an anchor point, at one shared scale.
@@ -745,7 +746,9 @@
     const heroScale = (DOOR.heroH * H) / (IMG.doorHero0.height * DOOR.heroFeetFrac);
     const panelX = DOOR.panelX * W;
     const panelFloor = DOOR.panelFloor * H;
-    const panelIdx = Math.min(5, S.hits);
+    // Damage only goes up: the panel sprite for each kick count, from the sealed look of the second
+    // frame onward (the first frame uses the same sprite, so the edges never show).
+    const panelIdx = DOOR_PANEL_BY_HIT[Math.min(S.hits, DOOR_PANEL_BY_HIT.length - 1)];
 
     ctx.drawImage(IMG.doorBg, 0, 0, W, H);
     // The cockpit shows through the doorway only once the door starts to break, so an intact door
