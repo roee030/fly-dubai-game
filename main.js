@@ -247,30 +247,27 @@
     f.k = Math.min(1, f.k + dt / 0.1);
   }
 
-  function fadeDraw(f, cx, cy) {
+  function fadeDraw(f) {
     if (!f.last) return;
-    if (f.prev && f.k < 1) drawCell(f.prev, cx, cy);
+    if (f.prev && f.k < 1) drawCell(f.prev);
     ctx.save();
     ctx.globalAlpha = f.k;
-    drawCell(f.last, cx, cy);
+    drawCell(f.last);
     ctx.restore();
   }
 
-  function drawCell(r, cx, cy) {
-    const dw = r.w * r.s;
-    const dh = r.h * r.s;
-    ctx.drawImage(IMG[r.src], r.x, r.y, r.w, r.h, cx - dw / 2, cy - dh / 2, dw, dh);
+  // Scene frames are stretched over the whole screen as well.
+  function drawCell(r) {
+    ctx.drawImage(IMG[r.src], r.x, r.y, r.w, r.h, 0, 0, W, H);
   }
 
+  // Backgrounds are stretched over the whole screen. `pan` (0..1) moves a window across the image.
   function drawCover(img, r, pan = 0.5, alpha = 1) {
-    const scale = Math.max(W / r.sw, H / r.sh);
-    const dw = r.sw * scale;
-    const dh = r.sh * scale;
-    const dx = -(dw - W) * clamp(pan, 0, 1);
-    const dy = (H - dh) / 2;
+    const vw = r.sw * 0.6;
+    const sx = r.sx + clamp(pan, 0, 1) * (r.sw - vw);
     ctx.save();
     ctx.globalAlpha = alpha;
-    ctx.drawImage(img, r.sx, r.sy, r.sw, r.sh, dx, dy, dw, dh);
+    ctx.drawImage(img, sx, r.sy, vw, r.sh, 0, 0, W, H);
     ctx.restore();
   }
 
@@ -370,9 +367,17 @@
   // The title screen waits for START GAME (button, Enter or Space).
   function startGame() {
     if (S.name !== "title") return;
+    enterFullscreen();
     titleEl.hidden = true;
     go("takeoff");
   }
+
+  // Browsers only allow fullscreen after a user gesture, so it is requested on the first tap.
+  function enterFullscreen() {
+    const el = document.documentElement;
+    if (!document.fullscreenElement && el.requestFullscreen) el.requestFullscreen().catch(() => {});
+  }
+  document.addEventListener("pointerdown", enterFullscreen);
   startBtn.addEventListener("click", startGame);
 
   // ---------------------------------------------------------------------------
@@ -560,7 +565,7 @@
     ctx.fillStyle = "#1a0d10";
     ctx.fillRect(0, 0, W, H);
 
-    fadeDraw(S.fade, W / 2, H / 2);
+    fadeDraw(S.fade);
 
     text("לחץ [SPACE] במהירות לפריצת הדלת!", W / 2, 40, 30, "#ffcc33");
     bar(W / 2 - 300, H - 60, 600, 36, S.hits / DOOR_HITS, "#ff8800", `${Math.round((S.hits / DOOR_HITS) * 100)}%`);
@@ -570,7 +575,7 @@
     ctx.fillStyle = "#000";
     ctx.fillRect(0, 0, W, H);
 
-    fadeDraw(S.fade, W / 2, H / 2);
+    fadeDraw(S.fade);
 
     text("הכרע את המחבל! [SPACE]", W / 2, 40, 30, "#ffcc33");
     bar(W - 300, 80, 260, 26, S.hp / 100, "#e33", "HP");
@@ -646,7 +651,7 @@
     ctx.translate(shakeX, shakeY);
     ctx.fillStyle = "#000";
     ctx.fillRect(-20, -20, W + 40, H + 40);
-    drawCell(YOKE_CELLS[idx], W / 2, H / 2);
+    drawCell(YOKE_CELLS[idx]);
     ctx.restore();
 
     drawAttitude(150, 150, 90, S.progress, S.pull || 0);
