@@ -25,7 +25,19 @@
     runner2: "keyed/runner-frame-2.png",
     runner3: "keyed/runner-frame-3.png",
     yoke: "consistent-hero-yoke-pull-animation.png",
-    doorStage: "cockpit-door-destruction-6frames.png",
+    doorBg: "gallery_image_20261003_232119-pixel-art-16-bit-side-view-of-an-airliner-cabin-co.jpg",
+    doorPanel0: "keyed/door/door-0.png",
+    doorPanel1: "keyed/door/door-1.png",
+    doorPanel2: "keyed/door/door-2.png",
+    doorPanel3: "keyed/door/door-3.png",
+    doorPanel4: "keyed/door/door-4.png",
+    doorPanel5: "keyed/door/door-5.png",
+    doorHero0: "keyed/door/hero-0.png",
+    doorHero1: "keyed/door/hero-1.png",
+    doorHero2: "keyed/door/hero-2.png",
+    doorHero3: "keyed/door/hero-3.png",
+    doorHero4: "keyed/door/hero-4.png",
+    doorHero5: "keyed/door/hero-5.png",
     fightBg: "gallery_image_20261003_231821-pixel-art-16-bit-side-view-of-an-airliner-cockpit.jpg",
     hero0: "keyed/fight/hero-0.png",
     hero1: "keyed/fight/hero-1.png",
@@ -75,10 +87,24 @@
   const RUNNER_SCALE = 300 / 630; // figure is about 630px tall in the sheet
   const ALARM_INTRO = 0.7; // seconds for the runner to slide in after the alarm
 
-  // Door: one row of 6 frames, from the kick to the door being destroyed. Each SPACE press
-  // reveals the next frame, so the damage builds up and never resets.
-  const DOOR_FRAMES = gridCells("doorStage", [227.5, 669.5, 1117.5, 1565, 2012.5, 2459.5], [319], 426, 498)[0];
-  const DOOR_HITS = DOOR_FRAMES.length - 1; // presses needed after the first frame
+  // Door breach: the door and the hero are separate sprites on the corridor background. Each SPACE
+  // press is one kick; the kick lands and the door breaks one more step.
+  const DOOR = {
+    panelX: 0.81, // door center, fraction of the screen width
+    panelFloor: 0.84, // where the door meets the floor, fraction of the screen height
+    panelH: 0.72, // door height as a fraction of the screen height
+    panelFeetFrac: 0.95, // door bottom inside its sprite (fraction of sprite height)
+    heroX: 0.38,
+    heroFloor: 0.93,
+    heroH: 0.66,
+    heroFeetFrac: 0.9,
+    lunge: 0.22, // hero steps toward the door so the kick reaches it
+    hitAt: 0.26,
+    kickEnd: 0.5,
+    kickFrames: [1, 2, 3, 4, 5], // hero frames used for the kick
+    kickEnds: [0.08, 0.16, 0.26, 0.36, 0.5],
+  };
+  const DOOR_HITS = 5; // kicks until the door is destroyed (sprite 5)
 
   // Pilot fight: the cockpit is the background, and the hero and pilot are separate sprites that
   // move on their own. Each sprite is drawn bottom-center on an anchor point, at one shared scale.
@@ -400,10 +426,13 @@
         break;
       case "door":
         S.hits = 0;
-        S.player = makePlayer();
-        S.fade = makeFade();
+        S.progress = 0;
+        S.atk = null;
+        S.hitStop = 0;
+        S.flash = 0;
         S.finishing = false;
-        S.doneT = 0;
+        S.endT = 0;
+        S.t = 0;
         break;
       case "fight":
         S.hits = 0;
@@ -494,25 +523,49 @@
     if (S.x >= W - 150) transitionTo("door");
   }
 
-  // Each SPACE press reveals the next door frame. The door only moves forward.
+  // One kick per SPACE press. The kick lands at DOOR.hitAt, the frame freezes for a moment, and the
+  // door steps to its next damage state. The door is never reset.
   function updateDoor(dt) {
     S.t += dt;
     const taps = consumeTaps();
-
-    if (!S.finishing) {
-      for (let i = 0; i < taps.space && S.hits < DOOR_HITS; i++) {
-        S.hits++;
-        playerQueue(S.player, [[DOOR_FRAMES[S.hits], 0.14]]);
-      }
-      if (S.hits >= DOOR_HITS) {
-        S.finishing = true;
-        playerQueue(S.player, [[DOOR_FRAMES[DOOR_HITS], 0.7]]);
-      }
+    if (!S.atk && !S.finishing && S.hits < DOOR_HITS && taps.space > 0) {
+      S.atk = { t: 0, landed: false };
     }
+    if (S.hitStop > 0) {
+      S.hitStop -= dt;
+    } else if (S.atk) {
+      S.atk.t += dt;
+      if (!S.atk.landed && S.atk.t >= DOOR.hitAt) {
+        S.atk.landed = true;
+        S.hitStop = 0.07;
+        S.hits++;
+        S.flash = 1;
+      }
+      if (S.atk.t >= DOOR.kickEnd) S.atk = null;
+    }
+    S.flash = Math.max(0, S.flash - dt / 0.18);
+    S.progress = S.hits / DOOR_HITS;
 
-    playerUpdate(S.player, dt);
-    if (S.finishing && !playerBusy(S.player)) transitionTo("fight");
-    fadeStep(S.fade, playerCell(S.player, DOOR_FRAMES[S.hits]), dt);
+    if (!S.atk && S.hits >= DOOR_HITS && !S.finishing) S.finishing = true;
+    if (S.finishing && !S.atk) {
+      S.endT += dt;
+      if (S.endT > 1.0) transitionTo("fight");
+    }
+  }
+
+  // Hero frame during the kick.
+  function doorHeroFrame() {
+    if (!S.atk) return 0;
+    const i = DOOR.kickEnds.findIndex((end) => S.atk.t < end);
+    return DOOR.kickFrames[i === -1 ? DOOR.kickFrames.length - 1 : i];
+  }
+
+  // Hero steps toward the door during the kick and returns.
+  function doorHeroLunge() {
+    if (!S.atk) return 0;
+    const t = S.atk.t;
+    if (t < DOOR.hitAt) return DOOR.lunge * W * (1 - Math.pow(1 - t / DOOR.hitAt, 2));
+    return DOOR.lunge * W * clamp(1 - (t - DOOR.hitAt) / (DOOR.kickEnd - DOOR.hitAt), 0, 1);
   }
 
   // One punch per SPACE press. The punch lands at FIGHT.hitAt, freezes the frame for a moment
@@ -678,11 +731,35 @@
     }
   }
 
-  function renderDoor() {
-    ctx.fillStyle = "#1a0d10";
-    ctx.fillRect(0, 0, W, H);
+  // Draws a sprite so that `feetFrac` of its height lands on the floor point (x, floorY).
+  function drawSpriteFeet(img, x, floorY, scale, feetFrac) {
+    const w = img.width * scale;
+    const h = img.height * scale;
+    ctx.drawImage(img, x - w / 2, floorY - feetFrac * h, w, h);
+  }
 
-    fadeDraw(S.fade);
+  function renderDoor() {
+    const panelScale = (DOOR.panelH * H) / (IMG.doorPanel0.height * DOOR.panelFeetFrac);
+    const heroScale = (DOOR.heroH * H) / (IMG.doorHero0.height * DOOR.heroFeetFrac);
+    const panelX = DOOR.panelX * W;
+    const panelFloor = DOOR.panelFloor * H;
+    const panelIdx = Math.min(5, S.hits);
+
+    ctx.drawImage(IMG.doorBg, 0, 0, W, H);
+    drawSpriteFeet(IMG["doorPanel" + panelIdx], panelX, panelFloor, panelScale, DOOR.panelFeetFrac);
+
+    const heroX = DOOR.heroX * W + doorHeroLunge();
+    drawSpriteFeet(IMG["doorHero" + doorHeroFrame()], heroX, DOOR.heroFloor * H, heroScale, DOOR.heroFeetFrac);
+
+    if (S.flash > 0) {
+      ctx.save();
+      ctx.globalAlpha = S.flash * 0.4;
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.arc(panelX - 0.1 * W, panelFloor - 0.5 * H, 0.12 * W, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
 
     text("לחץ [SPACE] במהירות לפריצת הדלת!", W / 2, 40, 30, "#ffcc33");
     bar(W / 2 - 300, H - 60, 600, 36, S.hits / DOOR_HITS, "#ff8800", `${Math.round((S.hits / DOOR_HITS) * 100)}%`);
