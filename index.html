@@ -64,15 +64,6 @@
     #btnAction { right: 3vw; }
     #btnNext { right: calc(3vw + var(--bw) + 16px); }
 
-    #restartBtn {
-      position: absolute; left: 50%; bottom: 4%; transform: translateX(-50%);
-      padding: 12px 30px; background: linear-gradient(#2b4a55, #1b323b);
-      border: 4px solid #a9c4c4; border-radius: 10px; color: #cfe7e4; cursor: pointer;
-      box-shadow: inset 0 -6px 0 #13242b, 0 0 14px rgba(90, 220, 220, 0.55);
-      font: bold 22px 'Courier New', Courier, monospace; letter-spacing: 1px;
-      -webkit-tap-highlight-color: transparent;
-    }
-    #restartBtn.hidden { display: none; }
     .btn.hidden { display: none; }
 
     /* Portrait phones: ask the player to rotate. */
@@ -107,8 +98,6 @@
         <button id="startBtn" aria-label="START GAME"></button>
       </div>
     </div>
-
-    <button id="restartBtn" class="hidden" aria-label="התחל מחדש">התחל מחדש</button>
 
     <div class="controls">
       <button class="btn" id="btnNext" aria-label="הבא">

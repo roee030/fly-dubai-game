@@ -171,19 +171,14 @@
   });
 
   // Each stage shows the button it uses: NEXT while running in the cabin, ACTION elsewhere.
+  // RUN shows in the cabin, ACTION shows in the door, fight and yoke stages, and neither shows
+  // during the takeoff or on the win screen.
   function syncButtons() {
-    const playing = S.name !== "title" && S.name !== "win";
     const running = S.name === "cabin";
+    const acting = S.name === "door" || S.name === "fight" || S.name === "yoke";
     btnNext.classList.toggle("hidden", !running);
-    btnAction.classList.toggle("hidden", !playing || running);
-    restartBtn.classList.toggle("hidden", S.name !== "win");
+    btnAction.classList.toggle("hidden", !acting);
   }
-
-  // "Start again" on the win screen.
-  const restartBtn = document.getElementById("restartBtn");
-  restartBtn.addEventListener("click", () => {
-    if (S.name === "win") go("takeoff");
-  });
 
   // Best effort: lock to landscape where the browser allows it (needs a user gesture).
   document.addEventListener("pointerdown", () => {
