@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>הצלת את הטיסה</title>
+  <style>
+    :root { --bg: #05070d; --accent: #ffcc33; }
+    html, body {
+      margin: 0; height: 100%; background: var(--bg);
+      -webkit-user-select: none; user-select: none; touch-action: none;
+      overflow: hidden;
+    }
+    body { display: flex; align-items: center; justify-content: center; }
+
+    #wrap { position: relative; width: min(100vw, calc(100vh * 16 / 9)); aspect-ratio: 16 / 9; }
+    #game {
+      width: 100%; height: 100%; display: block;
+      image-rendering: pixelated; background: #000;
+      box-shadow: 0 0 40px rgba(255, 204, 51, 0.15);
+    }
+    #loading {
+      position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+      color: var(--accent); font: bold 22px 'Courier New', Courier, monospace; background: #000;
+    }
+    #loading.error { color: #ff5555; }
+
+    /* Title screen: the artwork fills the game area; the START GAME button is placed on top of it. */
+    #title {
+      position: absolute; inset: 0; z-index: 5; background: #000;
+      display: flex; align-items: center; justify-content: center;
+    }
+    #title[hidden] { display: none; }
+    #titleBox {
+      position: relative; height: 100%; max-width: 100%; aspect-ratio: 1824 / 1683;
+      background: url("assets/title-screen.png") center / 100% 100% no-repeat;
+    }
+    #startBtn {
+      position: absolute; left: 26.7%; top: 76.9%; width: 46.8%; height: 14.3%;
+      background: transparent; border: 0; padding: 0; cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Touch controls, styled like the arcade buttons: dark bevelled square, teal glow, pixel label. */
+    .controls { display: none; }
+    .touch .controls { display: block; }
+    .btn {
+      position: absolute; bottom: 4%; width: 15%; max-width: 110px; min-width: 72px; aspect-ratio: 1;
+      display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+      background: none; border: 0; padding: 0; color: #cfe7e4; cursor: pointer;
+      font: bold 11px 'Courier New', Courier, monospace; letter-spacing: 0.5px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn .label { position: absolute; top: -34px; text-align: center; white-space: nowrap; line-height: 1.1; }
+    .btn .label span { display: block; font-size: 10px; color: #8fb8b4; }
+    .btn .face {
+      width: 100%; height: 100%; box-sizing: border-box;
+      background: linear-gradient(#2b4a55, #1b323b);
+      border: 4px solid #a9c4c4; border-radius: 10px;
+      box-shadow: inset 0 -6px 0 #13242b, 0 0 14px rgba(90, 220, 220, 0.55);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .btn.pressed .face { transform: translateY(3px); box-shadow: inset 0 -2px 0 #13242b, 0 0 8px rgba(90, 220, 220, 0.8); }
+    .btn svg { width: 56%; height: 56%; fill: #bfe3dd; }
+    #btnNext { left: 4%; }
+    #btnAction { right: 4%; }
+    .btn.hidden { display: none; }
+
+    /* Portrait phones: ask the player to rotate. */
+    #rotate {
+      display: none; position: fixed; inset: 0; background: #05070d; color: var(--accent);
+      flex-direction: column; align-items: center; justify-content: center; gap: 18px;
+      font: bold 20px 'Courier New', Courier, monospace; text-align: center; padding: 24px;
+    }
+    #rotate .phone {
+      width: 46px; height: 80px; border: 4px solid var(--accent); border-radius: 8px;
+      animation: spin 2.4s ease-in-out infinite;
+    }
+    @keyframes spin {
+      0%, 20% { transform: rotate(0deg); }
+      50%, 70% { transform: rotate(-90deg); }
+      100% { transform: rotate(-90deg); }
+    }
+    @media (orientation: portrait) and (pointer: coarse) {
+      #rotate { display: flex; }
+      #wrap { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div id="wrap">
+    <canvas id="game" width="960" height="540"></canvas>
+    <div id="loading">טוען נכסים...</div>
+    <div id="title" hidden>
+      <div id="titleBox">
+        <button id="startBtn" aria-label="START GAME"></button>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn" id="btnNext" aria-label="הבא">
+        <div class="label">NEXT<span>הבא</span></div>
+        <div class="face">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M2 8h9V4l7 6-7 6v-4H2z"/></svg>
+        </div>
+      </button>
+      <button class="btn" id="btnAction" aria-label="פעולה">
+        <div class="label">ACTION / REPEAT<span>פעולה</span></div>
+        <div class="face">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7"/></svg>
+        </div>
+      </button>
+    </div>
+  </div>
+
+  <div id="rotate">
+    <div class="phone"></div>
+    <div>סובב את המכשיר לרוחב<br><span style="font-size:14px;color:#8fb8b4">כדי לשחק</span></div>
+  </div>
+
+  <script>
+    // Show the touch controls on touch screens only.
+    if (window.matchMedia && matchMedia("(pointer: coarse)").matches) {
+      document.documentElement.classList.add("touch");
+      document.body.classList.add("touch");
+    }
+  </script>
+  <script src="main.js"></script>
+</body>
+</html>
