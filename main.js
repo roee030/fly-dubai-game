@@ -45,12 +45,12 @@
     hero3: "keyed/fight/hero-3.png",
     hero4: "keyed/fight/hero-4.png",
     hero5: "keyed/fight/hero-5.png",
-    pilot0: "keyed/fight/pilot-0.png",
-    pilot1: "keyed/fight/pilot-1.png",
-    pilot2: "keyed/fight/pilot-2.png",
-    pilot3: "keyed/fight/pilot-3.png",
-    pilot4: "keyed/fight/pilot-4.png",
-    pilot5: "keyed/fight/pilot-5.png",
+    pilot0: "keyed/fight/pilot2-0.png",
+    pilot1: "keyed/fight/pilot2-1.png",
+    pilot2: "keyed/fight/pilot2-2.png",
+    pilot3: "keyed/fight/pilot2-3.png",
+    pilot4: "keyed/fight/pilot2-4.png",
+    pilot5: "keyed/fight/pilot2-5.png",
   };
 
   // Every frame is drawn at the same on-screen height (BOX_H), so the picture never changes
@@ -783,7 +783,9 @@
     const breathe = S.atk ? 0 : Math.sin(S.t * 3) * 3;
 
     ctx.drawImage(IMG.fightBg, 0, 0, W, H);
-    drawSpriteAt(IMG["pilot" + pilotFrame()], pilotX, pilotBottom, pH / IMG.pilot0.height);
+    // The pilot's sprite frames are untouched cells; the floor point sits at 93% of the cell height.
+    const pilotScale = pH / (IMG.pilot0.height * 0.77);
+    drawSpriteFeet(IMG["pilot" + pilotFrame()], pilotX, pilotBottom, pilotScale, 0.93);
     if (S.flash > 0) {
       ctx.save();
       ctx.globalAlpha = S.flash * 0.45;
