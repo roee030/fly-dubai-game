@@ -26,7 +26,19 @@
     runner3: "keyed/runner-frame-3.png",
     yoke: "consistent-hero-yoke-pull-animation.png",
     doorStage: "cockpit-door-destruction-6frames.png",
-    pilotSeq: "pilot-8-12-6.png",
+    fightBg: "gallery_image_20261003_231821-pixel-art-16-bit-side-view-of-an-airliner-cockpit.jpg",
+    hero0: "keyed/fight/hero-0.png",
+    hero1: "keyed/fight/hero-1.png",
+    hero2: "keyed/fight/hero-2.png",
+    hero3: "keyed/fight/hero-3.png",
+    hero4: "keyed/fight/hero-4.png",
+    hero5: "keyed/fight/hero-5.png",
+    pilot0: "keyed/fight/pilot-0.png",
+    pilot1: "keyed/fight/pilot-1.png",
+    pilot2: "keyed/fight/pilot-2.png",
+    pilot3: "keyed/fight/pilot-3.png",
+    pilot4: "keyed/fight/pilot-4.png",
+    pilot5: "keyed/fight/pilot-5.png",
   };
 
   // Every frame is drawn at the same on-screen height (BOX_H), so the picture never changes
@@ -68,19 +80,26 @@
   const DOOR_FRAMES = gridCells("doorStage", [227.5, 669.5, 1117.5, 1565, 2012.5, 2459.5], [319], 426, 498)[0];
   const DOOR_HITS = DOOR_FRAMES.length - 1; // presses needed after the first frame
 
-  // Pilot fight: a 4 x 3 sheet of 12 frames, read left to right, top to bottom. The frames are cut
-  // at the measured panel edges (each panel is stretched to the screen like the other scenes).
-  const PILOT_COLS = [[6, 463], [474, 906], [917, 1334], [1345, 1785]];
-  const PILOT_ROWS = [[0, 425], [436, 813], [823, 1237]];
-  const PILOT_FRAMES = [];
-  for (const [y0, y1] of PILOT_ROWS) {
-    for (const [x0, x1] of PILOT_COLS) {
-      PILOT_FRAMES.push({ src: "pilotSeq", x: x0, y: y0, w: x1 - x0 + 1, h: y1 - y0 + 1 });
-    }
-  }
-  // Each SPACE press plays one group of 4 frames (punch, kick, pilot down), so the fight moves in
-  // three hits.
-  const PILOT_HITS = PILOT_FRAMES.length / 4;
+  // Pilot fight: the cockpit is the background, and the hero and pilot are separate sprites that
+  // move on their own. Each sprite is drawn bottom-center on an anchor point, at one shared scale.
+  const FIGHT = {
+    heroAnchor: { x: 0.26, y: 0.93 }, // fractions of the screen
+    pilotAnchor: { x: 0.8, y: 0.93 },
+    heroH: 0.66, // hero height as a fraction of the screen height
+    pilotH: 0.62,
+    lunge: 0.12, // how far the hero steps toward the pilot
+    hitAt: 0.14, // seconds into a punch when it lands
+    punchEnd: 0.5,
+    punchFrames: [1, 2, 3, 4, 5], // hero frames played during a punch
+    punchEnds: [0.07, 0.14, 0.2, 0.32, 0.5],
+    // Pilot reaction per hit: [frame, seconds] segments, the last frame holds.
+    reactions: [
+      [[1, 0.14], [2, 0.6]],
+      [[3, 0.5]],
+      [[4, 0.25], [5, 0.6]],
+    ],
+  };
+  const PILOT_HITS = FIGHT.reactions.length;
 
   // Yoke sheet: 8 panels (2 rows x 4), progressively more strain.
   const YOKE_CELLS = [];
@@ -389,9 +408,14 @@
       case "fight":
         S.hits = 0;
         S.hp = 100;
-        S.player = makePlayer();
-        S.fade = makeFade();
+        S.atk = null; // current punch: { t, n, landed }
+        S.hitStop = 0; // seconds frozen on impact
+        S.pilotSeg = null; // { hit, t } pilot reaction in progress
+        S.knock = 0;
+        S.flash = 0;
         S.finishing = false;
+        S.endT = 0;
+        S.t = 0;
         break;
       case "yoke":
         S.progress = 0;
@@ -483,27 +507,67 @@
     fadeStep(S.fade, playerCell(S.player, DOOR_FRAMES[S.hits]), dt);
   }
 
-  // Each SPACE press plays the next group of 4 frames of the fight. After the last group the pilot
-  // is down and the stage moves on.
+  // One punch per SPACE press. The punch lands at FIGHT.hitAt, freezes the frame for a moment
+  // (hit-stop), and the pilot reacts. Presses during a punch are ignored, so punches never overlap.
   function updateFight(dt) {
     S.t += dt;
     const taps = consumeTaps();
-    if (!S.finishing) {
-      for (let i = 0; i < taps.space && S.hits < PILOT_HITS; i++) {
-        const group = PILOT_FRAMES.slice(S.hits * 4, S.hits * 4 + 4);
-        S.hits++;
-        playerQueue(S.player, group.map((c) => [c, 0.09]));
-      }
+    if (!S.atk && !S.finishing && S.hits < PILOT_HITS && taps.space > 0) {
+      S.hits++;
+      S.atk = { t: 0, n: S.hits, landed: false };
       S.hp = Math.max(0, 100 - (S.hits / PILOT_HITS) * 100);
-      if (S.hits >= PILOT_HITS) {
-        S.finishing = true;
-        playerQueue(S.player, [[PILOT_FRAMES[PILOT_FRAMES.length - 1], 0.9]]);
-      }
     }
-    playerUpdate(S.player, dt);
-    if (S.finishing && !playerBusy(S.player)) transitionTo("yoke");
-    const idle = S.hits === 0 ? PILOT_FRAMES[0] : PILOT_FRAMES[S.hits * 4 - 1];
-    fadeStep(S.fade, playerCell(S.player, idle), dt);
+
+    if (S.hitStop > 0) {
+      S.hitStop -= dt;
+    } else if (S.atk) {
+      S.atk.t += dt;
+      if (!S.atk.landed && S.atk.t >= FIGHT.hitAt) {
+        S.atk.landed = true;
+        S.hitStop = 0.07;
+        S.knock = 0.04 * W;
+        S.flash = 1;
+        S.pilotSeg = { hit: S.atk.n, t: 0 };
+      }
+      if (S.atk.t >= FIGHT.punchEnd) S.atk = null;
+    }
+
+    if (S.pilotSeg && S.hitStop <= 0) S.pilotSeg.t += dt;
+    S.knock *= Math.exp(-10 * dt);
+    S.flash = Math.max(0, S.flash - dt / 0.18);
+
+    if (!S.atk && S.hits >= PILOT_HITS && !S.finishing) S.finishing = true;
+    if (S.finishing && !S.atk) {
+      S.endT += dt;
+      if (S.endT > 1.2) transitionTo("yoke");
+    }
+  }
+
+  // Frame index of the hero's punch at the current time.
+  function heroFrame() {
+    if (!S.atk) return 0;
+    const i = FIGHT.punchEnds.findIndex((end) => S.atk.t < end);
+    return FIGHT.punchFrames[i === -1 ? FIGHT.punchFrames.length - 1 : i];
+  }
+
+  // Hero step toward the pilot during the punch, and back.
+  function heroLunge() {
+    if (!S.atk) return 0;
+    const t = S.atk.t;
+    if (t < FIGHT.hitAt) return FIGHT.lunge * W * (1 - Math.pow(1 - t / FIGHT.hitAt, 2));
+    return FIGHT.lunge * W * clamp(1 - (t - FIGHT.hitAt) / (FIGHT.punchEnd - FIGHT.hitAt), 0, 1);
+  }
+
+  // Pilot frame for the current reaction. Holds the last frame of the reaction.
+  function pilotFrame() {
+    if (!S.pilotSeg) return 0;
+    const seg = FIGHT.reactions[S.pilotSeg.hit - 1];
+    let acc = 0;
+    for (const [frame, dur] of seg) {
+      acc += dur;
+      if (S.pilotSeg.t < acc) return frame;
+    }
+    return seg[seg.length - 1][0];
   }
 
   function updateYoke(dt) {
@@ -616,11 +680,35 @@
     bar(W / 2 - 300, H - 60, 600, 36, S.hits / DOOR_HITS, "#ff8800", `${Math.round((S.hits / DOOR_HITS) * 100)}%`);
   }
 
-  function renderFight() {
-    ctx.fillStyle = "#000";
-    ctx.fillRect(0, 0, W, H);
+  // Draws a sprite bottom-center at (x, bottom) at the given scale. All frames of a character use
+  // the same scale, so the character never changes size between frames.
+  function drawSpriteAt(img, x, bottom, k) {
+    const w = img.width * k;
+    const h = img.height * k;
+    ctx.drawImage(img, x - w / 2, bottom - h, w, h);
+  }
 
-    fadeDraw(S.fade);
+  function renderFight() {
+    const hH = FIGHT.heroH * H;
+    const pH = FIGHT.pilotH * H;
+    const pilotX = FIGHT.pilotAnchor.x * W + S.knock;
+    const pilotBottom = FIGHT.pilotAnchor.y * H;
+    const heroX = FIGHT.heroAnchor.x * W + heroLunge();
+    const heroBottom = FIGHT.heroAnchor.y * H;
+    const breathe = S.atk ? 0 : Math.sin(S.t * 3) * 3;
+
+    ctx.drawImage(IMG.fightBg, 0, 0, W, H);
+    drawSpriteAt(IMG["pilot" + pilotFrame()], pilotX, pilotBottom, pH / IMG.pilot0.height);
+    if (S.flash > 0) {
+      ctx.save();
+      ctx.globalAlpha = S.flash * 0.45;
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.arc(pilotX, pilotBottom - pH * 0.8, pH * 0.35, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+    drawSpriteAt(IMG["hero" + heroFrame()], heroX, heroBottom + breathe, hH / IMG.hero0.height);
 
     text("הכרע את המחבל! [SPACE]", W / 2, 40, 30, "#ffcc33");
     bar(W - 300, 80, 260, 26, S.hp / 100, "#e33", "HP");
