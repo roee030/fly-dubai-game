@@ -28,6 +28,7 @@
     #loading.error { color: #ff5555; }
     #loading .plane { width: min(30vw, 220px); animation: bob 1.6s ease-in-out infinite; }
     #loading .plane svg { width: 100%; height: auto; display: block; }
+    #loading .hint { font: 16px 'Courier New', Courier, monospace; color: #aab4c8; text-align: center; padding: 0 16px; }
     #loading .track { width: min(50vw, 320px); height: 10px; border: 2px solid #a9c4c4; border-radius: 4px; overflow: hidden; }
     #loading .fill { height: 100%; width: 0%; background: var(--accent); transition: width 0.2s linear; }
     @keyframes bob {
@@ -106,7 +107,8 @@
           <rect x="8" y="14" width="30" height="4" fill="#2f7fd1"/>
         </svg>
       </div>
-      <div id="loadingText">טוען נכסים...</div>
+      <div id="loadingText">הכנה לטיסה...</div>
+      <div class="hint">במשחק: חץ ימינה או כפתור הריצה לרוץ · רווח או כפתור הפעולה לפעול</div>
       <div class="track"><div class="fill" id="loadingFill"></div></div>
     </div>
     <div id="title" hidden>

@@ -26,7 +26,7 @@
     runner3: "keyed/runner-frame-3.png",
     yoke: "consistent-hero-yoke-pull-animation.png",
     doorStage: "cockpit-door-destruction-6frames.png",
-    pilotSeq: "pilot-new-source.png",
+    pilotSeq: "pilot-8-12-6.png",
   };
 
   // Every frame is drawn at the same on-screen height (BOX_H), so the picture never changes
@@ -68,11 +68,19 @@
   const DOOR_FRAMES = gridCells("doorStage", [227.5, 669.5, 1117.5, 1565, 2012.5, 2459.5], [319], 426, 498)[0];
   const DOOR_HITS = DOOR_FRAMES.length - 1; // presses needed after the first frame
 
-  // Pilot fight: one 2 x 3 sheet, 6 frames read left to right, top to bottom. Frame 1 is the
-  // ready stance; each SPACE press reveals the next frame: punch, kick, the pilot tumbling out of
-  // the seat, the hero standing over him, and the pilot down on the cockpit floor.
-  const PILOT_FRAMES = gridCells("pilotSeq", [397, 1200, 2000], [0, 854], 778, 790).flat();
-  const PILOT_HITS = PILOT_FRAMES.length - 1;
+  // Pilot fight: a 4 x 3 sheet of 12 frames, read left to right, top to bottom. The frames are cut
+  // at the measured panel edges (each panel is stretched to the screen like the other scenes).
+  const PILOT_COLS = [[6, 463], [474, 906], [917, 1334], [1345, 1785]];
+  const PILOT_ROWS = [[0, 425], [436, 813], [823, 1237]];
+  const PILOT_FRAMES = [];
+  for (const [y0, y1] of PILOT_ROWS) {
+    for (const [x0, x1] of PILOT_COLS) {
+      PILOT_FRAMES.push({ src: "pilotSeq", x: x0, y: y0, w: x1 - x0 + 1, h: y1 - y0 + 1 });
+    }
+  }
+  // Each SPACE press plays one group of 4 frames (punch, kick, pilot down), so the fight moves in
+  // three hits.
+  const PILOT_HITS = PILOT_FRAMES.length / 4;
 
   // Yoke sheet: 8 panels (2 rows x 4), progressively more strain.
   const YOKE_CELLS = [];
@@ -475,24 +483,27 @@
     fadeStep(S.fade, playerCell(S.player, DOOR_FRAMES[S.hits]), dt);
   }
 
-  // Each SPACE press reveals the next frame of the fight. After the last frame the pilot is down.
+  // Each SPACE press plays the next group of 4 frames of the fight. After the last group the pilot
+  // is down and the stage moves on.
   function updateFight(dt) {
     S.t += dt;
     const taps = consumeTaps();
     if (!S.finishing) {
       for (let i = 0; i < taps.space && S.hits < PILOT_HITS; i++) {
+        const group = PILOT_FRAMES.slice(S.hits * 4, S.hits * 4 + 4);
         S.hits++;
-        playerQueue(S.player, [[PILOT_FRAMES[S.hits], 0.15]]);
+        playerQueue(S.player, group.map((c) => [c, 0.09]));
       }
       S.hp = Math.max(0, 100 - (S.hits / PILOT_HITS) * 100);
       if (S.hits >= PILOT_HITS) {
         S.finishing = true;
-        playerQueue(S.player, [[PILOT_FRAMES[PILOT_HITS], 0.8]]);
+        playerQueue(S.player, [[PILOT_FRAMES[PILOT_FRAMES.length - 1], 0.9]]);
       }
     }
     playerUpdate(S.player, dt);
     if (S.finishing && !playerBusy(S.player)) transitionTo("yoke");
-    fadeStep(S.fade, playerCell(S.player, PILOT_FRAMES[S.hits]), dt);
+    const idle = S.hits === 0 ? PILOT_FRAMES[0] : PILOT_FRAMES[S.hits * 4 - 1];
+    fadeStep(S.fade, playerCell(S.player, idle), dt);
   }
 
   function updateYoke(dt) {
