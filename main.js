@@ -755,7 +755,16 @@
     ctx.clip();
     ctx.drawImage(IMG.cockpitBg, 0, 0, W, H);
     ctx.restore();
-    drawSpriteFeet(IMG["doorPanel" + panelIdx], panelX, panelFloor, panelScale, DOOR.panelFeetFrac);
+    // The door sprite is fitted to cover the whole doorway (its own margins are placed outside it).
+    const pw = (DOOR.doorway.w * W) / 0.864;
+    const ph = (DOOR.doorway.h * H) / 0.921;
+    ctx.drawImage(
+      IMG["doorPanel" + panelIdx],
+      DOOR.doorway.x * W - 0.0746 * pw,
+      DOOR.doorway.y * H - 0.0406 * ph,
+      pw,
+      ph
+    );
 
     const heroX = DOOR.heroX * W + doorHeroLunge();
     drawSpriteFeet(IMG["doorHero" + doorHeroFrame()], heroX, DOOR.heroFloor * H, heroScale, DOOR.heroFeetFrac);
