@@ -166,7 +166,8 @@
       const img = new Image();
       img.onload = () => resolve(img);
       img.onerror = () => reject(new Error("Failed to load " + file));
-      img.src = "assets/" + encodeURI(file);
+      // ?v= forces browsers to fetch the current versions of the resized files, not cached old ones.
+      img.src = "assets/" + encodeURI(file) + "?v=2";
     });
   }
 
