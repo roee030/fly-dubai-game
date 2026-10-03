@@ -748,8 +748,11 @@
     const panelIdx = Math.min(5, S.hits);
 
     ctx.drawImage(IMG.doorBg, 0, 0, W, H);
-    // The doorway shows the cockpit behind it, so breaking the door reveals a real space.
+    // The cockpit shows through the doorway only once the door starts to break, so an intact door
+    // stays sealed at its edges.
+    const reveal = clamp((S.hits - 2) / 2, 0, 1);
     ctx.save();
+    ctx.globalAlpha = reveal;
     ctx.beginPath();
     ctx.rect(DOOR.doorway.x * W, DOOR.doorway.y * H, DOOR.doorway.w * W, DOOR.doorway.h * H);
     ctx.clip();
