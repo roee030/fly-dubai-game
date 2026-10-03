@@ -24,7 +24,14 @@
     runner1: "keyed/runner-frame-1.png",
     runner2: "keyed/runner-frame-2.png",
     runner3: "keyed/runner-frame-3.png",
-    yoke: "consistent-hero-yoke-pull-animation.png",
+    yoke0: "keyed/yoke/yoke-0.jpg",
+    yoke1: "keyed/yoke/yoke-1.jpg",
+    yoke2: "keyed/yoke/yoke-2.jpg",
+    yoke3: "keyed/yoke/yoke-3.jpg",
+    yoke4: "keyed/yoke/yoke-4.jpg",
+    yoke5: "keyed/yoke/yoke-5.jpg",
+    yoke6: "keyed/yoke/yoke-6.jpg",
+    yoke7: "keyed/yoke/yoke-7.jpg",
     doorBg: "door-bg-clean.png",
     cockpitBg: "gallery_image_20261003_231821-pixel-art-16-bit-side-view-of-an-airliner-cockpit.jpg",
     doorPanel0: "keyed/door/door-0.png",
@@ -143,12 +150,11 @@
   };
   const PILOT_HITS = FIGHT.reactions.length;
 
-  // Yoke sheet: 8 panels (2 rows x 4), progressively more strain.
+  // Yoke: 8 frames of the hero pulling the yoke, from calm to full strain. Each frame is its own
+  // image; the stage picks the frame from the progress bar.
   const YOKE_CELLS = [];
   for (let i = 0; i < 8; i++) {
-    const col = i % 4;
-    const row = Math.floor(i / 4);
-    YOKE_CELLS.push({ src: "yoke", x: sc([34, 704, 1374, 2044][col]), y: sc([74, 614][row]), w: sc(603), h: sc(451), s: BOX_H / 451 });
+    YOKE_CELLS.push({ src: "yoke" + i, x: 0, y: 0, w: 0, h: 0 }); // 0 = the whole frame image
   }
 
   // Cabin sheet: two stacked states, measured from the image content. Both are 454px tall.
@@ -343,7 +349,8 @@
 
   // Scene frames are stretched over the whole screen as well.
   function drawCell(r) {
-    ctx.drawImage(IMG[r.src], r.x, r.y, r.w, r.h, 0, 0, W, H);
+    const img = IMG[r.src];
+    ctx.drawImage(img, r.x, r.y, r.w || img.width, r.h || img.height, 0, 0, W, H);
   }
 
   // Backgrounds are stretched over the whole screen. `pan` (0..1) moves a window across the image.
