@@ -923,7 +923,8 @@
     drawCell(YOKE_CELLS[idx]);
     ctx.restore();
 
-    drawAttitude(150, 150, 90, S.progress, S.pull || 0);
+    // Top right, smaller than before, so it stays out of the way of the yoke and the pilot.
+    drawAttitude(W - 80, 80, 56, S.progress, S.pull || 0);
 
     text("משוך את ההגה חזק! [SPACE]", W / 2, 40, 30, "#ffcc33");
     bar(W / 2 - 300, H - 60, 600, 36, S.progress / 100, "#55aaff", `${Math.round(S.progress)}%`);
