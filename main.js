@@ -481,7 +481,7 @@
     if (!document.fullscreenElement && el.requestFullscreen) el.requestFullscreen().catch(() => {});
   }
   document.addEventListener("pointerdown", enterFullscreen);
-  startBtn.addEventListener("click", startGame);
+  startBtn.addEventListener("click", () => startGame());
 
   // ---------------------------------------------------------------------------
   // Updates
