@@ -103,8 +103,20 @@
 
   // The plane and runner sheets in assets/keyed/ are copies with the white background made
   // transparent, generated ahead of time because browsers block pixel reads over file://.
+  // Loads every asset and moves the loading bar as each one finishes.
   function loadAll() {
-    return Promise.all(Object.entries(ASSET_FILES).map(([key, file]) => loadImage(file).then((img) => (IMG[key] = img))));
+    const entries = Object.entries(ASSET_FILES);
+    const fill = document.getElementById("loadingFill");
+    let done = 0;
+    return Promise.all(
+      entries.map(([key, file]) =>
+        loadImage(file).then((img) => {
+          IMG[key] = img;
+          done++;
+          fill.style.width = `${Math.round((done / entries.length) * 100)}%`;
+        })
+      )
+    );
   }
 
   // ---------------------------------------------------------------------------
@@ -725,7 +737,7 @@
       requestAnimationFrame(frame);
     })
     .catch((err) => {
-      loadingEl.textContent = "שגיאה בטעינה: " + err.message;
+      document.getElementById("loadingText").textContent = "שגיאה בטעינה: " + err.message;
       loadingEl.classList.add("error");
     });
 })();

@@ -21,10 +21,19 @@
       box-shadow: 0 0 40px rgba(255, 204, 51, 0.15);
     }
     #loading {
-      position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-      color: var(--accent); font: bold 22px 'Courier New', Courier, monospace; background: #000;
+      position: absolute; inset: 0; z-index: 6; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 22px;
+      color: var(--accent); font: bold 22px 'Courier New', Courier, monospace; background: #05070d;
     }
     #loading.error { color: #ff5555; }
+    #loading .plane { width: min(30vw, 220px); animation: bob 1.6s ease-in-out infinite; }
+    #loading .plane svg { width: 100%; height: auto; display: block; }
+    #loading .track { width: min(50vw, 320px); height: 10px; border: 2px solid #a9c4c4; border-radius: 4px; overflow: hidden; }
+    #loading .fill { height: 100%; width: 0%; background: var(--accent); transition: width 0.2s linear; }
+    @keyframes bob {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
 
     /* Title screen: the artwork fills the game area; the START GAME button is placed on top of it. */
     #title {
@@ -90,7 +99,16 @@
 <body>
   <div id="wrap">
     <canvas id="game" width="960" height="540"></canvas>
-    <div id="loading">טוען נכסים...</div>
+    <div id="loading">
+      <div class="plane">
+        <svg viewBox="0 0 64 32" aria-hidden="true">
+          <path fill="#e8eef5" d="M4 16 L26 14 L30 2 L36 2 L34 14 L50 13 L58 6 L61 7 L56 16 L61 25 L58 26 L50 19 L34 18 L36 30 L30 30 L26 18 L4 16 Z"/>
+          <rect x="8" y="14" width="30" height="4" fill="#2f7fd1"/>
+        </svg>
+      </div>
+      <div id="loadingText">טוען נכסים...</div>
+      <div class="track"><div class="fill" id="loadingFill"></div></div>
+    </div>
     <div id="title" hidden>
       <div id="titleBox">
         <video id="titleVideo" src="assets/vidu-video-3493389160749266.mp4" poster="assets/title-screen.png"
