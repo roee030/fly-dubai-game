@@ -44,6 +44,16 @@
     #title[hidden] { display: none; }
     #titleBox { position: relative; width: 100%; height: 100%; }
     #titleVideo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; }
+    /* Stage picker for testing: only shown with ?debug in the address. */
+    #stagePick {
+      position: absolute; left: 0; right: 0; bottom: 2%; display: none; gap: 8px;
+      flex-wrap: wrap; justify-content: center; padding: 0 12px;
+    }
+    .debug #stagePick { display: flex; }
+    #stagePick button {
+      background: #1b323b; color: #cfe7e4; border: 2px solid #a9c4c4; border-radius: 6px;
+      padding: 6px 12px; font: bold 14px 'Courier New', Courier, monospace; cursor: pointer;
+    }
     #startBtn {
       position: absolute; left: 26.6%; top: 77%; width: 46.8%; height: 14.5%;
       background: transparent; border: 0; padding: 0; cursor: pointer;
@@ -112,6 +122,14 @@
       <div class="track"><div class="fill" id="loadingFill"></div></div>
     </div>
     <div id="title" hidden>
+      <div id="stagePick">
+        <button data-stage="takeoff">1 המראה</button>
+        <button data-stage="cabin">2 תא נוסעים</button>
+        <button data-stage="door">3 דלת</button>
+        <button data-stage="fight">4 טייס</button>
+        <button data-stage="yoke">5 משיכה</button>
+        <button data-stage="win">6 סיום</button>
+      </div>
       <div id="titleBox">
         <video id="titleVideo" src="assets/vidu-video-3493389160749266.mp4" poster="assets/title-screen.png"
                autoplay muted loop playsinline preload="auto"></video>
@@ -140,6 +158,7 @@
 
   <script>
     // Show the touch controls on touch screens only.
+    if (location.search.includes("debug")) document.body.classList.add("debug");
     if (window.matchMedia && matchMedia("(pointer: coarse)").matches) {
       document.documentElement.classList.add("touch");
       document.body.classList.add("touch");

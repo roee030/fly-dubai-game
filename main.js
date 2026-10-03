@@ -431,12 +431,20 @@
   }
 
   // The title screen waits for START GAME (button, Enter or Space).
-  function startGame() {
+  function startGame(stage = "takeoff") {
     if (S.name !== "title") return;
     enterFullscreen();
     titleEl.hidden = true;
-    go("takeoff");
+    go(stage);
   }
+
+  // Testing: with ?debug in the address, the title screen shows a stage picker.
+  document.querySelectorAll("#stagePick button").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      startGame(btn.dataset.stage);
+    });
+  });
 
   // Browsers only allow fullscreen after a user gesture, so it is requested on the first tap.
   function enterFullscreen() {
