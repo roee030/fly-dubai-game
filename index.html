@@ -78,8 +78,8 @@
       box-shadow: inset 0 -6px 0 #13242b, 0 0 14px rgba(90, 220, 220, 0.55);
       display: flex; align-items: center; justify-content: center;
     }
-    .btn.pressed .face { transform: translateY(3px); box-shadow: inset 0 -2px 0 #13242b, 0 0 8px rgba(90, 220, 220, 0.8); }
-    .btn svg { width: 56%; height: 56%; fill: #bfe3dd; }
+    .btn.pressed img { transform: translateY(3px) scale(0.96); }
+    .btn img { width: 100%; height: 100%; display: block; object-fit: contain; pointer-events: none; }
     /* Both buttons sit on the right: RUN (arrow) next to ACTION (circle). */
     #btnAction { right: 3vw; }
     #btnNext { right: calc(3vw + var(--bw) + 16px); }
@@ -139,14 +139,10 @@
 
     <div class="controls">
       <button class="btn" id="btnNext" aria-label="הבא">
-        <div class="face">
-          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M2 8h9V4l7 6-7 6v-4H2z"/></svg>
-        </div>
+        <img src="assets/keyed/btn-run.png" alt="" draggable="false">
       </button>
       <button class="btn" id="btnAction" aria-label="פעולה">
-        <div class="face">
-          <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7"/></svg>
-        </div>
+        <img src="assets/keyed/btn-punch.png" alt="" draggable="false">
       </button>
     </div>
   </div>
