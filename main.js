@@ -273,6 +273,16 @@
     ctx.restore();
   }
 
+  // Keeps the image proportions (cover fit), used for the cabin so it is not stretched.
+  function drawCoverKeep(img, r, pan = 0.5) {
+    const scale = Math.max(W / r.sw, H / r.sh);
+    const dw = r.sw * scale;
+    const dh = r.sh * scale;
+    const dx = -(dw - W) * clamp(pan, 0, 1);
+    const dy = (H - dh) / 2;
+    ctx.drawImage(img, r.sx, r.sy, r.sw, r.sh, dx, dy, dw, dh);
+  }
+
   function drawSprite(img, r, cx, cy, width, angle = 0) {
     const h = (width * r.sh) / r.sw;
     ctx.save();
@@ -539,7 +549,7 @@
       : { sx: 0, sy: CABIN_NORMAL_TOP, sw: img.width, sh: CABIN_STACK_H };
     // Alarm: the whole screen shakes a little.
     if (S.alarm) ctx.translate((Math.random() - 0.5) * 6, (Math.random() - 0.5) * 6);
-    drawCover(img, sheet, p);
+    drawCoverKeep(img, sheet, p);
 
     if (S.alarm) {
       const pulse = 0.25 + 0.2 * Math.sin(S.alarmT * 8);
