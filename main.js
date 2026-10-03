@@ -107,7 +107,16 @@
     kickEnds: [0.08, 0.16, 0.26, 0.36, 0.5],
   };
   const DOOR_HITS = 5; // kicks until the door is destroyed
-  const DOOR_PANEL_BY_HIT = [1, 2, 3, 3, 5, 5]; // door sprite shown after 0..5 kicks
+  const DOOR_PANEL_BY_HIT = [0, 1, 2, 3, 5, 5]; // door sprite shown after 0..5 kicks
+  // Opaque bounds of each door sprite (x0, y0, x1, y1) inside its 456 x 912 frame.
+  const DOOR_BOX = [
+    [34, 37, 428, 877],
+    [23, 38, 432, 877],
+    [30, 37, 435, 877],
+    [28, 37, 425, 877],
+    [21, 38, 456, 875],
+    [0, 37, 435, 881],
+  ];
 
   // Pilot fight: the cockpit is the background, and the hero and pilot are separate sprites that
   // move on their own. Each sprite is drawn bottom-center on an anchor point, at one shared scale.
@@ -761,15 +770,19 @@
     ctx.clip();
     ctx.drawImage(IMG.cockpitBg, 0, 0, W, H);
     ctx.restore();
-    // The door sprite is fitted to cover the whole doorway (its own margins are placed outside it).
-    const pw = (DOOR.doorway.w * W) / 0.864;
-    const ph = (DOOR.doorway.h * H) / 0.921;
+    // Each door sprite's own panel (its opaque bounds) is fitted to the doorway, so every state of
+    // the door has the same size and place in the wall.
+    const [bx0, by0, bx1, by1] = DOOR_BOX[panelIdx];
     ctx.drawImage(
       IMG["doorPanel" + panelIdx],
-      DOOR.doorway.x * W - 0.0746 * pw,
-      DOOR.doorway.y * H - 0.0406 * ph,
-      pw,
-      ph
+      bx0,
+      by0,
+      bx1 - bx0,
+      by1 - by0,
+      DOOR.doorway.x * W,
+      DOOR.doorway.y * H,
+      DOOR.doorway.w * W,
+      DOOR.doorway.h * H
     );
 
     const heroX = DOOR.heroX * W + doorHeroLunge();
