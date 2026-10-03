@@ -83,11 +83,11 @@
   // Pilot fight: the cockpit is the background, and the hero and pilot are separate sprites that
   // move on their own. Each sprite is drawn bottom-center on an anchor point, at one shared scale.
   const FIGHT = {
-    heroAnchor: { x: 0.26, y: 0.93 }, // fractions of the screen
-    pilotAnchor: { x: 0.8, y: 0.93 },
+    heroAnchor: { x: 0.42, y: 0.93 }, // fractions of the screen
+    pilotAnchor: { x: 0.74, y: 0.93 },
     heroH: 0.66, // hero height as a fraction of the screen height
     pilotH: 0.62,
-    lunge: 0.12, // how far the hero steps toward the pilot
+    lunge: 0.12, // how far the hero steps toward the pilot, so the punch reaches him
     hitAt: 0.14, // seconds into a punch when it lands
     punchEnd: 0.5,
     punchFrames: [1, 2, 3, 4, 5], // hero frames played during a punch
