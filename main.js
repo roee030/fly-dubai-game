@@ -186,7 +186,8 @@
   // RUN shows in the cabin, ACTION shows in the door, fight and yoke stages, and neither shows
   // during the takeoff or on the win screen.
   function syncButtons() {
-    const running = S.name === "cabin";
+    // RUN appears only once the runner is in the cabin and able to move.
+    const running = S.name === "cabin" && S.alarm && S.alarmT >= ALARM_INTRO;
     const acting = S.name === "door" || S.name === "fight" || S.name === "yoke";
     btnNext.classList.toggle("hidden", !running);
     btnAction.classList.toggle("hidden", !acting);
