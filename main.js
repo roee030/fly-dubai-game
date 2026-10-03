@@ -25,7 +25,7 @@
     runner2: "keyed/runner-frame-2.png",
     runner3: "keyed/runner-frame-3.png",
     yoke: "consistent-hero-yoke-pull-animation.png",
-    doorBg: "gallery_image_20261003_232119-pixel-art-16-bit-side-view-of-an-airliner-cabin-co.jpg",
+    doorBg: "door-bg-clean.png",
     doorPanel0: "keyed/door/door-0.png",
     doorPanel1: "keyed/door/door-1.png",
     doorPanel2: "keyed/door/door-2.png",
@@ -45,12 +45,11 @@
     hero3: "keyed/fight/hero-3.png",
     hero4: "keyed/fight/hero-4.png",
     hero5: "keyed/fight/hero-5.png",
-    pilot0: "keyed/fight/pilot2-0.png",
-    pilot1: "keyed/fight/pilot2-1.png",
-    pilot2: "keyed/fight/pilot2-2.png",
-    pilot3: "keyed/fight/pilot2-3.png",
-    pilot4: "keyed/fight/pilot2-4.png",
-    pilot5: "keyed/fight/pilot2-5.png",
+    pilot0: "keyed/fight/pilot3-0.png",
+    pilot1: "keyed/fight/pilot3-1.png",
+    pilot2: "keyed/fight/pilot3-2.png",
+    pilot3: "keyed/fight/pilot3-3.png",
+    pilot4: "keyed/fight/pilot3-4.png",
   };
 
   // Every frame is drawn at the same on-screen height (BOX_H), so the picture never changes
@@ -90,9 +89,9 @@
   // Door breach: the door and the hero are separate sprites on the corridor background. Each SPACE
   // press is one kick; the kick lands and the door breaks one more step.
   const DOOR = {
-    panelX: 0.81, // door center, fraction of the screen width
-    panelFloor: 0.84, // where the door meets the floor, fraction of the screen height
-    panelH: 0.72, // door height as a fraction of the screen height
+    panelX: 0.80, // door center, fraction of the screen width
+    panelFloor: 0.85, // where the door meets the floor, fraction of the screen height
+    panelH: 0.73, // door height as a fraction of the screen height
     panelFeetFrac: 0.95, // door bottom inside its sprite (fraction of sprite height)
     heroX: 0.38,
     heroFloor: 0.93,
@@ -122,7 +121,7 @@
     reactions: [
       [[1, 0.14], [2, 0.6]],
       [[3, 0.5]],
-      [[4, 0.25], [5, 0.6]],
+      [[4, 0.6]],
     ],
   };
   const PILOT_HITS = FIGHT.reactions.length;
