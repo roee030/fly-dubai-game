@@ -106,8 +106,8 @@
     kickFrames: [1, 2, 3, 4, 5], // hero frames used for the kick
     kickEnds: [0.08, 0.16, 0.26, 0.36, 0.5],
   };
-  const DOOR_HITS = 5; // kicks until the door is destroyed
-  const DOOR_PANEL_BY_HIT = [0, 1, 2, 3, 5, 5]; // door sprite shown after 0..5 kicks
+  const DOOR_HITS = 4; // kicks until the door is destroyed
+  const DOOR_PANEL_BY_HIT = [0, 1, 2, 3, 5]; // door sprite shown after 0..4 kicks
   // Opaque bounds of each door sprite (x0, y0, x1, y1) inside its 456 x 912 frame.
   const DOOR_BOX = [
     [34, 37, 428, 877],
