@@ -26,6 +26,7 @@
     runner3: "keyed/runner-frame-3.png",
     yoke: "consistent-hero-yoke-pull-animation.png",
     doorBg: "door-bg-clean.png",
+    cockpitBg: "gallery_image_20261003_231821-pixel-art-16-bit-side-view-of-an-airliner-cockpit.jpg",
     doorPanel0: "keyed/door/door-0.png",
     doorPanel1: "keyed/door/door-1.png",
     doorPanel2: "keyed/door/door-2.png",
@@ -84,12 +85,14 @@
   // on the cabin floor line. All frames share one scale, so the runner's size never changes.
   const RUNNER_FEET_Y = 497; // cabin floor line on screen
   const RUNNER_SCALE = 300 / 630; // figure is about 630px tall in the sheet
-  const ALARM_INTRO = 0.7; // seconds for the runner to slide in after the alarm
+  const ALARM_DELAY = 0.15; // the runner waits a moment after the alarm before coming in
+  const ALARM_INTRO = 0.7; // seconds for the runner to slide in after that
 
   // Door breach: the door and the hero are separate sprites on the corridor background. Each SPACE
   // press is one kick; the kick lands and the door breaks one more step.
   const DOOR = {
     panelX: 0.80, // door center, fraction of the screen width
+    doorway: { x: 0.645, y: 0.12, w: 0.31, h: 0.73 }, // the opening in the wall (fractions)
     panelFloor: 0.85, // where the door meets the floor, fraction of the screen height
     panelH: 0.73, // door height as a fraction of the screen height
     panelFeetFrac: 0.95, // door bottom inside its sprite (fraction of sprite height)
@@ -239,7 +242,7 @@
   // during the takeoff or on the win screen.
   function syncButtons() {
     // RUN appears only once the runner is in the cabin and able to move.
-    const running = S.name === "cabin" && S.alarm && S.alarmT >= ALARM_INTRO;
+    const running = S.name === "cabin" && S.alarm && S.alarmT >= ALARM_DELAY + ALARM_INTRO;
     const acting = S.name === "door" || S.name === "fight" || S.name === "yoke";
     btnNext.classList.toggle("hidden", !running);
     btnAction.classList.toggle("hidden", !acting);
@@ -508,7 +511,7 @@
     if (S.alarm) S.alarmT += dt;
 
     // Controls unlock only once the runner has slid in after the alarm.
-    const ready = S.alarm && S.alarmT >= ALARM_INTRO;
+    const ready = S.alarm && S.alarmT >= ALARM_DELAY + ALARM_INTRO;
     const taps = consumeTaps();
     if (ready) {
       if (input.rightHeld) S.speed += 520 * dt;
@@ -717,7 +720,7 @@
 
     // Runner: hidden until the alarm, then slides in and fades up.
     if (S.alarm) {
-      const k = clamp(S.alarmT / ALARM_INTRO, 0, 1);
+      const k = clamp((S.alarmT - ALARM_DELAY) / ALARM_INTRO, 0, 1);
       const e = 1 - Math.pow(1 - k, 3);
       const img = IMG["runner" + (Math.floor(S.anim) % 4)];
       const w = img.width * RUNNER_SCALE;
@@ -745,6 +748,13 @@
     const panelIdx = Math.min(5, S.hits);
 
     ctx.drawImage(IMG.doorBg, 0, 0, W, H);
+    // The doorway shows the cockpit behind it, so breaking the door reveals a real space.
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(DOOR.doorway.x * W, DOOR.doorway.y * H, DOOR.doorway.w * W, DOOR.doorway.h * H);
+    ctx.clip();
+    ctx.drawImage(IMG.cockpitBg, 0, 0, W, H);
+    ctx.restore();
     drawSpriteFeet(IMG["doorPanel" + panelIdx], panelX, panelFloor, panelScale, DOOR.panelFeetFrac);
 
     const heroX = DOOR.heroX * W + doorHeroLunge();
