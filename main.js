@@ -285,14 +285,23 @@
     ctx.restore();
   }
 
-  // Keeps the image proportions (cover fit), used for the cabin so it is not stretched.
+  // Cabin background: cover fit in real screen pixels, so the passengers keep their proportions
+  // even though the canvas itself is stretched to the screen.
   function drawCoverKeep(img, r, pan = 0.5) {
-    const scale = Math.max(W / r.sw, H / r.sh);
+    const rect = canvas.getBoundingClientRect();
+    const dW = rect.width;
+    const dH = rect.height;
+    const kx = dW / W;
+    const ky = dH / H;
+    const scale = Math.max(dW / r.sw, dH / r.sh);
     const dw = r.sw * scale;
     const dh = r.sh * scale;
-    const dx = -(dw - W) * clamp(pan, 0, 1);
-    const dy = (H - dh) / 2;
+    const dx = -(dw - dW) * clamp(pan, 0, 1);
+    const dy = (dH - dh) / 2;
+    ctx.save();
+    ctx.scale(1 / kx, 1 / ky);
     ctx.drawImage(img, r.sx, r.sy, r.sw, r.sh, dx, dy, dw, dh);
+    ctx.restore();
   }
 
   function drawSprite(img, r, cx, cy, width, angle = 0) {
