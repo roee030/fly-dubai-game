@@ -75,9 +75,13 @@
   }
 
   // Takeoff sheet: airborne plane only (no runway strip).
+  // The large sheets (takeoff, yoke, cabin) were downsized to 1280px wide for faster loading.
+  // Their crop coordinates below were measured on the original 2688px sheets, so they are scaled here.
+  const SS = 1280 / 2688;
+  const sc = (v) => Math.round(v * SS);
   const PLANE = {
-    level: { sx: 34, sy: 54, sw: 632, sh: 184 }, // frame 1: level, crop above the runway strip
-    shallow: { sx: 2003, sy: 368, sw: 644, sh: 190 }, // frame 8: shallow climb, used for the sky
+    level: { sx: sc(34), sy: sc(54), sw: sc(632), sh: sc(184) }, // frame 1: level, crop above the runway strip
+    shallow: { sx: sc(2003), sy: sc(368), sw: sc(644), sh: sc(190) }, // frame 8: shallow climb, used for the sky
   };
 
   // Runner sheet: 4 equal frames across. Figure occupies rows ~384..1024.
@@ -144,13 +148,13 @@
   for (let i = 0; i < 8; i++) {
     const col = i % 4;
     const row = Math.floor(i / 4);
-    YOKE_CELLS.push({ src: "yoke", x: [34, 704, 1374, 2044][col], y: [74, 614][row], w: 603, h: 451, s: BOX_H / 451 });
+    YOKE_CELLS.push({ src: "yoke", x: sc([34, 704, 1374, 2044][col]), y: sc([74, 614][row]), w: sc(603), h: sc(451), s: BOX_H / 451 });
   }
 
   // Cabin sheet: two stacked states, measured from the image content. Both are 454px tall.
-  const CABIN_NORMAL_TOP = 135;
-  const CABIN_EMERGENCY_TOP = 627;
-  const CABIN_STACK_H = 454;
+  const CABIN_NORMAL_TOP = sc(135);
+  const CABIN_EMERGENCY_TOP = sc(627);
+  const CABIN_STACK_H = sc(454);
 
   // ---------------------------------------------------------------------------
   // Asset loading
